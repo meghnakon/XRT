@@ -117,7 +117,11 @@ PYBIND11_MODULE(pyxrt, m) {
         .def(py::init<>())
         .def(py::init([](const xrt::device& d, const xrt::uuid& u) {
             return new xrt::hw_context(d, u);
-        }));
+        }))
+        .def("get_aie_coredump", [](const xrt::hw_context& ctx) {
+            py::gil_scoped_release release;
+            return py::bytes(ctx.get_aie_coredump());
+        }, "Returns the coredump of AIE Array if available. Returns bytes containing memory/register dump of AIE tiles.");
 
 /*
  *

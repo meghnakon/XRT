@@ -138,6 +138,35 @@ namespace xdp {
       return;
   
     xrt_core::message::send(xrt_core::message::severity_level::debug, "XRT", 
+      "Dumping AIE Core to file");
+
+    hw_ctx = xrt_core::hw_context_int::create_hw_context_from_implementation(hwCtxImpl);
+    std::vector<char> aieCore = hw_ctx.get_aie_coredump();
+    
+    // Write AIE coredump to file
+    std::string aieCoreDumpFile;
+    if (0 == implId) {
+      aieCoreDumpFile = "aie_coredump.bin";
+    } else {
+      aieCoreDumpFile = "aie_coredump_" + std::to_string(implId) + ".bin";
+    }
+    
+    std::ofstream fOut(aieCoreDumpFile, std::ios::binary);
+    if (fOut.is_open() && !aieCore.empty()) {
+      fOut.write(aieCore.data(), aieCore.size());
+      fOut.close();
+      
+      std::stringstream msg;
+      msg << "AIE coredump written to " << aieCoreDumpFile 
+          << " (" << aieCore.size() << " bytes)";
+      xrt_core::message::send(xrt_core::message::severity_level::debug, "XRT", msg.str());
+    } else {
+      xrt_core::message::send(xrt_core::message::severity_level::warning, "XRT", 
+        "Failed to write AIE coredump to file");
+    }
+  
+
+    xrt_core::message::send(xrt_core::message::severity_level::debug, "XRT", 
               "Syncing Allocated buffer In MLTimelineVE2Impl::finishflushDevice");
               
     mResultBOHolder->syncFromDevice();    
