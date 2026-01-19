@@ -140,7 +140,8 @@ namespace xdp {
     xrt_core::message::send(xrt_core::message::severity_level::debug, "XRT", 
       "Dumping AIE Core to file");
 
-    hw_ctx = xrt_core::hw_context_int::create_hw_context_from_implementation(hwCtxImpl);
+    xrt::hw_context hw_ctx = xrt_core::hw_context_int::create_hw_context_from_implementation(hwCtxImpl);
+
     std::vector<char> aieCore = hw_ctx.get_aie_coredump();
     
     // Write AIE coredump to file
@@ -151,10 +152,10 @@ namespace xdp {
       aieCoreDumpFile = "aie_coredump_" + std::to_string(implId) + ".bin";
     }
     
-    std::ofstream fOut(aieCoreDumpFile, std::ios::binary);
-    if (fOut.is_open() && !aieCore.empty()) {
-      fOut.write(aieCore.data(), aieCore.size());
-      fOut.close();
+    std::ofstream fOut0(aieCoreDumpFile, std::ios::binary);
+    if (fOut0.is_open() && !aieCore.empty()) {
+      fOut0.write(aieCore.data(), aieCore.size());
+      fOut0.close();
       
       std::stringstream msg;
       msg << "AIE coredump written to " << aieCoreDumpFile 
