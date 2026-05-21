@@ -62,9 +62,25 @@ void flush_device(void* handle)
 // data structures before the shim connection is destroyed so the profiling
 // side can process and dump the data.  If the profiling objects are destroyed
 // before the shim, these functions just return.
+//
+// hw_context_flow tags the caller's flow:
+//   false -> SHIM dtor (legacy LOAD_XCLBIN flow). This is the only caller today.
+//   true  -> reserved for callers that route through xrt::hw_context_impl.
+//
+// When XDP has already been configured for REGISTER_XCLBIN flow (via an
+// implicit hw_context created during loadXclBin), the SHIM-side flush would
+// hand the plugin a xocl::shim* that the plugin would mis-cast to a
+// hw_context_impl*, causing a segfault. Skip the flush in that case;
+// xrt::hw_context_impl::~hw_context_impl will perform the flush with the
+// correct pointer type.
 inline
-void finish_flush_device(void* handle)
+void finish_flush_device(void* handle, bool hw_context_flow)
 {
+  constexpr int REGISTER_XCLBIN_STYLE = 2;
+
+  if (!hw_context_flow && hal::get_app_style() == REGISTER_XCLBIN_STYLE)
+    return;
+
   hal::flush_device(handle);
   aie::finish_flush_device(handle);
   aie::ctr::end_poll(handle);

@@ -37,15 +37,19 @@ namespace device_offload {
 
   std::function<void (void*, bool)> update_device_cb;
   std::function<void (void*)> flush_device_cb;
- 
+  std::function<int  (void)>  get_app_style_cb;
+
   void register_functions(void* handle)
   {
     using ftype = void (*)(void*);
     using utype = void (*)(void*, bool);
+    using gtype = int  (*)(void);
 
     update_device_cb = reinterpret_cast<utype>(xrt_core::dlsym(handle, "updateDeviceHAL"));
 
     flush_device_cb = reinterpret_cast<ftype>(xrt_core::dlsym(handle, "flushDeviceHAL"));
+
+    get_app_style_cb = reinterpret_cast<gtype>(xrt_core::dlsym(handle, "getAppStyleHAL"));
   }
 
   void warning_function()
@@ -70,6 +74,15 @@ namespace device_offload {
   {
     if (device_offload::update_device_cb != nullptr)
       device_offload::update_device_cb(handle, hw_context_flow);
+  }
+
+  int get_app_style()
+  {
+    if (device_offload::get_app_style_cb != nullptr)
+      return device_offload::get_app_style_cb();
+    // Plugin not loaded (e.g. tracing disabled). Report NOT_SET so callers
+    // treat this as "no XDP state to honour" and proceed with default behavior.
+    return 0;
   }
 } // end namespace hal
 } // end namespace xdp

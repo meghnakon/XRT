@@ -22,6 +22,11 @@ namespace hal {
   void flush_device(void* handle);
   void update_device(void* handle, bool hw_context_flow);
 
+  // Returns the XDP AppStyle reported by the device-offload plugin .so.
+  //   0 = NOT_SET, 1 = LOAD_XCLBIN_STYLE, 2 = REGISTER_XCLBIN_STYLE.
+  // Returns 0 when the plugin is not loaded (no trace enabled).
+  int  get_app_style();
+
 namespace device_offload {
   void load() ;
   void register_functions(void* handle);

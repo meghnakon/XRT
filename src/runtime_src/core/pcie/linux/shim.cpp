@@ -870,7 +870,8 @@ shim::~shim()
 
     // Flush all of the profiling information from the device to the profiling
     // library before the device is closed (when profiling is enabled).
-    xdp::finish_flush_device(this);
+    // false -> legacy LOAD_XCLBIN flow. Further down we check this value against XDP's appStyle
+    xdp::finish_flush_device(this, false);
 
     // The BO cache unmaps and releases all execbo, but this must
     // be done before the device is closed.
